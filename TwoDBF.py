@@ -1,6 +1,9 @@
 import mmh3
 import array
 import numpy as np
+from cuckoopy import CuckooFilter 
+import sys
+
 
 class TwoDBF:
     def __init__(self, X, Y, faultTolerance):
@@ -9,10 +12,11 @@ class TwoDBF:
         self.X = X
         self.Y = Y
         self.inputCount = 0
-        self.tau = (64//faultTolerance) * 2 # C = sigma / alpha, tau = C X (1x2)
+        self.tau = (64//faultTolerance) * X * Y # C = sigma / alpha, tau = C X multiplication of dimension
+        self.alreadyMemberCount = 0
 
     def createBloomFilter(self, X, Y):
-        self.bf = RArray(X, Y)  # create a R-array composed of 0
+        self.bf = TwoArray(X, Y)  # create a R-array composed of 0
 
     def set(self, i, j, pos):
         d = self.bf.get(i, j)
@@ -33,7 +37,7 @@ class TwoDBF:
         return self.inputCount
 
     def isFull(self):
-        if self.setCount() != self.tau:
+        if self.inputCount != self.tau:
             return False
         return True
 
@@ -50,9 +54,12 @@ class TwoDBF:
             self.set(i, j, pos)
         else:
             if self.isFull():
-                print("Filter is full")
+                pass
+                # print("Filter is full")
             else:
-                print(f"The word : \"{word}\" is already a member of BF")
+                pass
+                # print(f"The word : \"{word}\" is already a member of BF")
+                self.alreadyMemberCount += 1
 
     def testMember(self, word):
         flag = True
@@ -78,16 +85,20 @@ class TwoDBF:
         if self.testMember(word):
             self.delete(i, j, pos)
         else:
-            print(f"The word : \"{word}\" does not exist")
+            pass
+            # print(f"The word : \"{word}\" does not exist")
     
     def __repr__(self):
         return self.bf.__repr__()
 
-class RArray:
+    def getAlreadyMemberCount(self):
+        return self.alreadyMemberCount
+
+class TwoArray:
     def __init__(self, X, Y):
         self.bf = np.array([0 for _ in range(X)], dtype=array.array)
         for i in range(X):
-            arr = array.array("Q", (0 for i in range(Y)))   # Q = Unsigned long long; L = Unsigned long
+            arr = array.array("Q", (0 for _ in range(Y)))   # Q = Unsigned long long; L = Unsigned long
             self.bf[i] = arr     
     
     def get(self, X, Y):
@@ -96,6 +107,13 @@ class RArray:
     def set(self, X, Y, value):
         self.bf[X][Y] = value
     
+    def nbBits(self):
+        arraySize = sys.getsizeof(self.bf[0])
+        itemSize = self.bf.itemsize
+        print(arraySize)
+        print(arraySize*len(self.bf))
+        print(itemSize)
+        
     def __repr__(self):
         repr = ""
         for i in range(len(self.bf)):
@@ -106,9 +124,10 @@ class RArray:
         
 
 if __name__ == "__main__":
-    bloom = TwoDBF(31, 37, 55)
+    bloom = TwoDBF(5, 7, 4)
 
-    fileName = "DataCleaned.txt"
-    with open(fileName, mode="r") as book:
-        for word in book.readlines():
-            bloom.setMember(word[:-1])
+
+    for i in range(80):
+        bloom.setMember(str(i))
+
+    print(bloom)
