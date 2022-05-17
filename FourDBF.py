@@ -4,7 +4,7 @@ import numpy as np
 
 
 class FourDBF:
-    def __init__(self, X, Y, Z, W, faultTolerance):
+    def __init__(self, X, Y, Z, W, faultTolerance, print_info=True):
          # faultTolerance between 1 and 64(numbers of bites)
         self.createBloomFilter(X, Y, Z, W)
         self.X = X
@@ -14,6 +14,7 @@ class FourDBF:
         self.inputCount = 0
         self.tau = (64//faultTolerance) * X * Y * Z * W # C = sigma / alpha, tau = C X multiplication of dimension
         self.alreadyMemberCount = 0
+        self.print_info = print_info
 
     def createBloomFilter(self, X, Y, Z, W):
         self.bf = FourArray(X, Y, Z, W)  # create a R-array composed of 0
@@ -56,9 +57,11 @@ class FourDBF:
             self.set(i, j, k, l, pos)
         else:
             if self.isFull():
-                print("Filter is full")
+                if self.print_info:
+                    print("Filter is full")
             else:
-                print(f"The word : \"{word}\" is already a member of BF")
+                if self.print_info:
+                    print(f"The word : \"{word}\" is already a member of BF")
                 self.alreadyMemberCount += 1
 
     def testMember(self, word):
@@ -89,7 +92,8 @@ class FourDBF:
         if self.testMember(word):
             self.delete(i, j, k, l, pos)
         else:
-            print(f"The word : \"{word}\" does not exist")
+            if self.print_info:
+                print(f"The word : \"{word}\" does not exist")
             
     def getAlreadyMemberCount(self):
         return self.alreadyMemberCount
@@ -126,7 +130,7 @@ class FourArray:
         
 
 if __name__ == "__main__":
-    bf = FourDBF(31, 37, 41, 43, 55)
+    bf = FourDBF(31, 37, 41, 43, 4)
 
     fileName = "DataCleaned.txt"
     with open(fileName, mode="r") as book:

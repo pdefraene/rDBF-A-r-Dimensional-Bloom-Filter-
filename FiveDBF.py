@@ -5,7 +5,7 @@ import numpy as np
 
 
 class FiveDBF:
-    def __init__(self, X, Y, Z, W, V, faultTolerance):
+    def __init__(self, X, Y, Z, W, V, faultTolerance, print_info=True):
          # faultTolerance between 1 and 64(numbers of bites)
         self.createBloomFilter(X, Y, Z, W, V)
         self.X = X
@@ -16,6 +16,7 @@ class FiveDBF:
         self.inputCount = 0
         self.tau = (64//faultTolerance) * X * Y * Z * W * V # C = sigma / alpha, tau = C X multiplication of dimension
         self.alreadyMemberCount = 0
+        self.print_info = print_info
 
     def createBloomFilter(self, X, Y, Z, W, V):
         self.bf = FiveArray(X, Y, Z, W, V)  # create a R-array composed of 0
@@ -59,9 +60,11 @@ class FiveDBF:
             self.set(i, j, k, l, m, pos)
         else:
             if self.isFull():
-                print("Filter is full")
+                if self.print_info:
+                    print("Filter is full")
             else:
-                print(f"The word : \"{word}\" is already a member of BF")
+                if self.print_info:
+                    print(f"The word : \"{word}\" is already a member of BF")
                 self.alreadyMemberCount += 1
 
     def testMember(self, word):
@@ -94,7 +97,8 @@ class FiveDBF:
         if self.testMember(word):
             self.delete(i, j, k, l, m, pos)
         else:
-            print(f"The word : \"{word}\" does not exist")
+            if self.print_info:
+                print(f"The word : \"{word}\" does not exist")
             
     def getAlreadyMemberCount(self):
         return self.alreadyMemberCount
@@ -135,7 +139,7 @@ class FiveArray:
 
 if __name__ == "__main__":
     print("Creation")
-    bf = FiveDBF(31, 37, 41, 43, 47, 55)
+    bf = FiveDBF(31, 37, 41, 43, 47, 4)
     print("Launch")
     fileName = "DataCleaned.txt"
     with open(fileName, mode="r") as book:

@@ -4,7 +4,7 @@ import numpy as np
 
 
 class ThreeDBF:
-    def __init__(self, X, Y, Z, faultTolerance):
+    def __init__(self, X, Y, Z, faultTolerance, print_info=True):
          # faultTolerance between 1 and 64(numbers of bites)
         self.createBloomFilter(X, Y, Z)
         self.X = X
@@ -13,6 +13,7 @@ class ThreeDBF:
         self.inputCount = 0
         self.tau = (64//faultTolerance) * X * Y * Z # C = sigma / alpha, tau = C X  multiplication of dimension
         self.alreadyMemberCount = 0
+        self.print_info = print_info
 
     def createBloomFilter(self, X, Y, Z):
         self.bf = ThreeArray(X, Y, Z)  # create a R-array composed of 0
@@ -54,9 +55,11 @@ class ThreeDBF:
             self.set(i, j, k, pos)
         else:
             if self.isFull():
-                print("Filter is full")
+                if self.print_info:
+                    print("Filter is full")
             else:
-                print(f"The word : \"{word}\" is already a member of BF")
+                if self.print_info:
+                    print(f"The word : \"{word}\" is already a member of BF")
                 self.alreadyMemberCount += 1
 
     def testMember(self, word):
@@ -85,7 +88,8 @@ class ThreeDBF:
         if self.testMember(word):
             self.delete(i, j, k, pos)
         else:
-            print(f"The word : \"{word}\" does not exist")
+            if self.print_info:
+                print(f"The word : \"{word}\" does not exist")
     
     def __repr__(self):
         return self.bf.__repr__()
@@ -119,7 +123,7 @@ class ThreeArray:
         
 
 if __name__ == "__main__":
-    bf = ThreeDBF(31, 37, 41, 55)
+    bf = ThreeDBF(31, 37, 41, 4)
 
     fileName = "DataCleaned.txt"
     with open(fileName, mode="r") as book:

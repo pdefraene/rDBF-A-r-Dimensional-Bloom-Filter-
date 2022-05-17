@@ -6,7 +6,7 @@ import sys
 
 
 class TwoDBF:
-    def __init__(self, X, Y, faultTolerance):
+    def __init__(self, X, Y, faultTolerance, print_info=True):
          # faultTolerance between 1 and 64(numbers of bites)
         self.createBloomFilter(X, Y)
         self.X = X
@@ -14,6 +14,7 @@ class TwoDBF:
         self.inputCount = 0
         self.tau = (64//faultTolerance) * X * Y # C = sigma / alpha, tau = C X multiplication of dimension
         self.alreadyMemberCount = 0
+        self.print_info = print_info
 
     def createBloomFilter(self, X, Y):
         self.bf = TwoArray(X, Y)  # create a R-array composed of 0
@@ -54,11 +55,11 @@ class TwoDBF:
             self.set(i, j, pos)
         else:
             if self.isFull():
-                pass
-                # print("Filter is full")
+                if self.print_info:
+                    print("Filter is full")
             else:
-                pass
-                # print(f"The word : \"{word}\" is already a member of BF")
+                if self.print_info:
+                    print(f"The word : \"{word}\" is already a member of BF")
                 self.alreadyMemberCount += 1
 
     def testMember(self, word):
@@ -85,8 +86,8 @@ class TwoDBF:
         if self.testMember(word):
             self.delete(i, j, pos)
         else:
-            pass
-            # print(f"The word : \"{word}\" does not exist")
+            if self.print_info:
+                print(f"The word : \"{word}\" does not exist")
     
     def __repr__(self):
         return self.bf.__repr__()
