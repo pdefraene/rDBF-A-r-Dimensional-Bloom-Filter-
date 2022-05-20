@@ -1,8 +1,9 @@
 import time
+import random
+import mmh3
 
 import operator as op
 from functools import reduce
-
 
 from cuckoopy import CuckooFilter
 from bloom_filter import BloomFilter
@@ -344,25 +345,32 @@ def compare_look_up_times():
 """
 False positive probability
 """
-def nCr(n, r):
-    r = min(r, n-r)
-    numer = reduce(op.mul, range(n, n-r, -1), 1)
-    denom = reduce(op.mul, range(1, r+1), 1)
-    return numer // denom  # or / in Python 2
+def random_string_of_chars(length):
+    letters = "qwertyuiopasdfghjklzxcvbnm"
+    return "".join((random.choice(letters) for i in range(length)))
 
 
-def compute_false_positive_probability(sigma, alpha, X, Y):
-    tau = (sigma//alpha)*X*Y
-    n = 1000
+def compute_false_positive(bloom, number_of_insert, number_of_trials):
+    for _ in range(number_of_insert):
+        bloom.setMember(random_string_of_chars(100))
+    false_positive = 0
+    for _ in range(number_of_trials):
+        random_word = random_string_of_chars(100)   
+        if bloom.testMember(random_word):
+            false_positive += 1
+    return 100*false_positive/number_of_trials
 
-    false_positive_probability = 0
-    for i in range(tau):
-        first_sum = (i/tau) * (tau, i)
-        second_sum = 0
-        for j in range(i):
-            second_sum += (-1)**j * nCr(i, j) * ((i-j)/tau)**n
-        false_positive_probability += first_sum * second_sum
-    return false_positive_probability
+
+def compare_false_positive():
+    bloom_2 = TwoDBF(31, 37, 4, print_info=False)
+    bloom_3 = ThreeDBF(31, 37, 2, 4, print_info=False)
+    bloom_4 = FourDBF(31, 37, 2, 3, 4, print_info=False)
+    bloom_5 = FiveDBF(31, 37, 2, 3, 5, 4, print_info=False)
+
+    print(f"bloom 2 : {compute_false_positive(bloom_2, 2000, 1000)} %")
+    print(f"bloom 3 : {compute_false_positive(bloom_3, 2000, 1000)} %")
+    print(f"bloom 4 : {compute_false_positive(bloom_4, 2000, 1000)} %")
+    print(f"bloom 5 : {compute_false_positive(bloom_5, 2000, 1000)} %")
 
 
 if __name__ == "__main__":
@@ -370,5 +378,4 @@ if __name__ == "__main__":
     # compare_insertion_time()
     # compare_different_number_of_insertion_time()
     # compare_look_up_times()
-    fpp = compute_false_positive_probability(64, 4, 31, 37)
-    print(fpp)
+    compare_false_positive()

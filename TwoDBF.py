@@ -111,7 +111,8 @@ class TwoArray:
     def nbBits(self):
         arraySize = sys.getsizeof(self.bf[0])
         itemSize = self.bf.itemsize
-        print(arraySize)
+
+        print("arraySize", arraySize)
         print(arraySize*len(self.bf))
         print(itemSize)
         
@@ -125,10 +126,11 @@ class TwoArray:
         
 
 if __name__ == "__main__":
-    bloom = TwoDBF(5, 7, 4)
+    bloom = TwoDBF(31, 37, 4)
 
 
     for i in range(80):
         bloom.setMember(str(i))
 
     print(bloom)
+    bloom.bf.nbBits()
