@@ -5,7 +5,7 @@ import numpy as np
 
 class FourDBF:
     def __init__(self, X, Y, Z, W, faultTolerance, print_info=True):
-         # faultTolerance between 1 and 64(numbers of bites)
+        # faultTolerance between 1 and 64(numbers of bits)
         self.createBloomFilter(X, Y, Z, W)
         self.X = X
         self.Y = Y

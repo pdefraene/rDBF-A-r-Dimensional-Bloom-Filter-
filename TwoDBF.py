@@ -7,7 +7,7 @@ import sys
 
 class TwoDBF:
     def __init__(self, X, Y, faultTolerance, print_info=True):
-         # faultTolerance between 1 and 64(numbers of bites)
+        # faultTolerance between 1 and 64 (numbers of bits)
         self.createBloomFilter(X, Y)
         self.X = X
         self.Y = Y
@@ -127,7 +127,6 @@ class TwoArray:
 
 if __name__ == "__main__":
     bloom = TwoDBF(31, 37, 4)
-
 
     for i in range(80):
         bloom.setMember(str(i))

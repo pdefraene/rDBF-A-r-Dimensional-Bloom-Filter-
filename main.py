@@ -361,16 +361,27 @@ def compute_false_positive(bloom, number_of_insert, number_of_trials):
     return 100*false_positive/number_of_trials
 
 
-def compare_false_positive():
-    bloom_2 = TwoDBF(31, 37, 4, print_info=False)
-    bloom_3 = ThreeDBF(31, 37, 2, 4, print_info=False)
-    bloom_4 = FourDBF(31, 37, 2, 3, 4, print_info=False)
-    bloom_5 = FiveDBF(31, 37, 2, 3, 5, 4, print_info=False)
+def compare_false_positive(trials=100):
+    all_res_2 = 0
+    all_res_3 = 0
+    all_res_4 = 0
+    all_res_5 = 0
 
-    print(f"bloom 2 : {compute_false_positive(bloom_2, 2000, 1000)} %")
-    print(f"bloom 3 : {compute_false_positive(bloom_3, 2000, 1000)} %")
-    print(f"bloom 4 : {compute_false_positive(bloom_4, 2000, 1000)} %")
-    print(f"bloom 5 : {compute_false_positive(bloom_5, 2000, 1000)} %")
+    for i in range(trials):
+        print(i+1)
+        bloom_2 = TwoDBF(31, 37, 4, print_info=False)
+        bloom_3 = ThreeDBF(31, 37, 2, 4, print_info=False)
+        bloom_4 = FourDBF(31, 37, 2, 3, 4, print_info=False)
+        bloom_5 = FiveDBF(31, 37, 2, 3, 5, 4, print_info=False)
+        all_res_2 += compute_false_positive(bloom_2, 2000, 1000)
+        all_res_3 += compute_false_positive(bloom_3, 2000, 1000)
+        all_res_4 += compute_false_positive(bloom_4, 2000, 1000)
+        all_res_5 += compute_false_positive(bloom_5, 2000, 1000)
+
+    print(f"bloom 2 : {round(all_res_2/trials, 3)} %")
+    print(f"bloom 3 : {round(all_res_3/trials, 3)} %")
+    print(f"bloom 4 : {round(all_res_4/trials, 3)} %")
+    print(f"bloom 5 : {round(all_res_5/trials, 3)} %")
 
 
 if __name__ == "__main__":
