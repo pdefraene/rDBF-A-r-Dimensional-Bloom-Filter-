@@ -1,4 +1,4 @@
-from Analysis import compare_processing_times, compare_insertion_time, compare_different_number_of_insertion_time, \
+from Analysis import compare_processing_time, compare_insertion_time, compare_different_number_of_insertion_time, \
     compare_look_up_times, compare_false_positive
 from FalseNegativeProof import ProofFalseNegative
 
@@ -15,11 +15,18 @@ def main():
     This cleaning has been done in the "DataCleaner.py" file.
     """
     fileName = "DataCleaned3.txt"
-    compare_processing_times(fileName)
+
+    print("Processing time")
+    compare_processing_time(fileName)
+    print("Insertion time")
     compare_insertion_time(fileName)
-    compare_different_number_of_insertion_time(fileName, trials=100)
+    print("Different number of insertion time")
+    compare_different_number_of_insertion_time(fileName)
+    print("Look up time")
     compare_look_up_times(fileName, number_of_look_up=10000)
+    print("False positive")
     compare_false_positive(trials=100)
+    print("False negative proof")
     ProofFalseNegative()
 
 

@@ -40,7 +40,7 @@ def check_processing_time_bloom(filter, fileName):
     end_time = time.time()
     return end_time - start_time
 
-def compare_processing_times(fileName = "DataCleaned3.txt"):
+def compare_processing_time(fileName = "DataCleaned3.txt"):
     """
     Compare the total processing time taken by all filters on a given dataset.
     """
@@ -165,7 +165,7 @@ def check_different_number_of_insertion_time_cuckoo(filter, fileName, number_of_
     end_time = time.time()
     return end_time - start_time
 
-def compare_different_number_of_insertion_time(fileName = "DataCleaned3.txt", trials=100):
+def compare_different_number_of_insertion_time(fileName = "DataCleaned3.txt"):
     """
     Compare how much time it takes to insert 5000, 10000, 15000, etc. elemets for every filter on a given dataset.
     """
@@ -177,22 +177,17 @@ def compare_different_number_of_insertion_time(fileName = "DataCleaned3.txt", tr
     cuckoo_filter = CuckooFilter(capacity=100000, bucket_size=10000, fingerprint_size=1000)
 
     number_of_insertions = [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000, 90000, 95000]
-    average_insertion_times = [0 for _ in range(len(number_of_insertions))]
-    for a in range(trials):
-        print(a+1)
-        insertion_times = []
-        for i in number_of_insertions:
-            insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_2, fileName, i))
-            insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_3, fileName, i))
-            insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_4, fileName, i))
-            insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_5, fileName, i))    
-            insertion_times.append(check_different_number_of_insertion_time_bloom_simple(bloom_simple, fileName, i))
-            insertion_times.append(check_different_number_of_insertion_time_cuckoo(cuckoo_filter, fileName, i))
-        for i in range(len(insertion_times)):
-            average_insertion_times[i] += insertion_times[i]/trials
-    names = ["2DBF", "3DBF", "4DBF", "5DBF", "Simple Bloom", "Cuckoo"]
+    insertion_times = []
+    for i in number_of_insertions:
+        insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_2, fileName, i))
+        insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_3, fileName, i))
+        insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_4, fileName, i))
+        insertion_times.append(check_different_number_of_insertion_time_bloom(bloom_5, fileName, i))    
+        insertion_times.append(check_different_number_of_insertion_time_bloom_simple(bloom_simple, fileName, i))
+        insertion_times.append(check_different_number_of_insertion_time_cuckoo(cuckoo_filter, fileName, i))
 
-    plot_different_number_of_insertion_times(average_insertion_times, names, number_of_insertions)
+    names = ["2DBF", "3DBF", "4DBF", "5DBF", "Simple Bloom", "Cuckoo"]
+    plot_different_number_of_insertion_times(insertion_times, names, number_of_insertions)
 
 
 
