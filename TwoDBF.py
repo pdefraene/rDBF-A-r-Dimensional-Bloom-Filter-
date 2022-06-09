@@ -1,50 +1,63 @@
 import mmh3
 import array
 import numpy as np
-from cuckoopy import CuckooFilter 
 import sys
 
 
 class TwoDBF:
     def __init__(self, X, Y, faultTolerance, print_info=True):
-        # faultTolerance between 1 and 64 (numbers of bits)
+        """
+        Create a 2D Bloom Filter of size X * Y.
+        The faultTolerance must be between 1 and 64, which is the number of bits in the bit array.
+        """
         self.createBloomFilter(X, Y)
         self.X = X
         self.Y = Y
         self.inputCount = 0
         self.tau = (64//faultTolerance) * X * Y # C = sigma / alpha, tau = C X multiplication of dimension
-        self.alreadyMemberCount = 0
         self.print_info = print_info
 
     def createBloomFilter(self, X, Y):
+        """
+        Create the array of size X * Y.
+        """
         self.bf = TwoArray(X, Y)  # create a R-array composed of 0
 
     def set(self, i, j, pos):
+        """
+        Set the bit of position pos in the bit array to 1, at the indices i, j of the filter.
+        """
         d = self.bf.get(i, j)
         p = 1 << pos
         self.bf.set(i, j, d | p)
 
     def test(self, i, j, pos):
+        """
+        Test the bit of position pos int the bit array, at the indices i, j of the filter (if set to 1).
+        """
         d = self.bf.get(i, j)
         p = 1 << pos
         r = d ^ p   # XOR
         t = r & p
-        if t == 0 and d != 0:   # Bit is set to one
-            return True
-        return False
+        return (t == 0 and d != 0) # Look if the bit is set to one
 
     def setCount(self):
+        """
+        Increment the counter of entries and return it
+        """
         self.inputCount += 1
         return self.inputCount
 
     def isFull(self):
-        if self.inputCount != self.tau:
-            return False
-        return True
+        """
+        Return true if the bloom filter is full, false otherwise.
+        """
+        return self.inputCount == self.tau
 
     def setMember(self, word):
         """
-        non-blind insertion
+        Add a word in the bloom filter, meaning set the corresponding bit to 1.
+        This is done in non-blind insertion, which means we look if the word is already in the bloom filter before inserting.
         """
         h = mmh3.hash64(word, seed=42, signed=False)[0]
         i = h % self.X
@@ -60,18 +73,21 @@ class TwoDBF:
             else:
                 if self.print_info:
                     print(f"The word : \"{word}\" is already a member of BF")
-                self.alreadyMemberCount += 1
 
     def testMember(self, word):
-        flag = True
+        """
+        Test if a word is in the bloom filter. (bit set to 1)
+        """
         h = mmh3.hash64(word, seed=42, signed=False)[0]
         i = h % self.X
         j = h % self.Y
         pos = h % 63    # Mod 63 (bits), use odd number of bits decrease collision
-        flag = self.test(i, j, pos)
-        return flag
+        return self.test(i, j, pos)
 
     def delete(self, i, j, pos):
+        """
+        Set the bit of position pos in the bit array to 0, at the indices i, j of the filter.
+        """
         d = self.bf.get(i, j)
         p = 1 << pos
         r = d ^ p
@@ -79,6 +95,9 @@ class TwoDBF:
             self.bf.set(i, j, r)
 
     def deleteMember(self, word):
+        """
+        Delete a word in the bloom filter. (bit set to 0)
+        """
         h = mmh3.hash64(word, seed=42, signed=False)[0]
         i = h % self.X
         j = h % self.Y
@@ -90,16 +109,20 @@ class TwoDBF:
                 print(f"The word : \"{word}\" does not exist")
     
     def __repr__(self):
+        """
+        Return a representation of the bloom filter.
+        """
         return self.bf.__repr__()
-
-    def getAlreadyMemberCount(self):
-        return self.alreadyMemberCount
 
 class TwoArray:
     def __init__(self, X, Y):
+        """
+        Create a matrix of size X * Y, where each value is a bit array of size 64 bits.
+        We can get and set each value by giving correct coordinates.
+        """
         self.bf = np.array([0 for _ in range(X)], dtype=array.array)
         for i in range(X):
-            arr = array.array("Q", (0 for _ in range(Y)))   # Q = Unsigned long long; L = Unsigned long
+            arr = array.array("Q", (0 for _ in range(Y)))   # Q = Unsigned long long; L = Unsigned long 64 bits
             self.bf[i] = arr     
     
     def get(self, X, Y):
@@ -110,13 +133,14 @@ class TwoArray:
     
     def nbBits(self):
         arraySize = sys.getsizeof(self.bf[0])
-        itemSize = self.bf.itemsize
 
-        print("arraySize", arraySize)
-        print(arraySize*len(self.bf))
-        print(itemSize)
+        print(" Size of one array", arraySize)
+        print("Size of all array", arraySize*len(self.bf))
         
     def __repr__(self):
+        """
+        Return a representation of the bloom filter.
+        """
         repr = ""
         for i in range(len(self.bf)):
             for j in range(len(self.bf[0])):

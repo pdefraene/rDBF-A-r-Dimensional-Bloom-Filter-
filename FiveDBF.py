@@ -5,7 +5,10 @@ import numpy as np
 
 class FiveDBF:
     def __init__(self, X, Y, Z, W, V, faultTolerance, print_info=True):
-        # faultTolerance between 1 and 64(numbers of bits)
+        """
+        Create a 5D Bloom Filter of size X * Y * Z * W * V.
+        The faultTolerance must be between 1 and 64, which is the number of bits in the bit array.
+        """
         self.createBloomFilter(X, Y, Z, W, V)
         self.X = X
         self.Y = Y
@@ -14,38 +17,49 @@ class FiveDBF:
         self.V = V
         self.inputCount = 0
         self.tau = (64//faultTolerance) * X * Y * Z * W * V # C = sigma / alpha, tau = C X multiplication of dimension
-        self.alreadyMemberCount = 0
         self.print_info = print_info
 
-    def createBloomFilter(self, X, Y, Z, W, V):
+    def createBloomFilter(self, X, Y, Z, W, V):        
+        """
+        Create the array of size X * Y * Z * W * V
+        """
         self.bf = FiveArray(X, Y, Z, W, V)  # create a R-array composed of 0
 
     def set(self, i, j, k, l, m, pos):
+        """
+        Set the bit of position pos in the bit array to 1, at the indices i, j, k, l, m of the filter.
+        """
         d = self.bf.get(i, j, k, l, m)
         p = 1 << pos
         self.bf.set(i, j, k, l, m, d | p)
 
     def test(self, i, j, k, l, m, pos):
+        """
+        Test the bit of position pos int the bit array, at the indices i, j, k, l, m of the filter (if set to 1).
+        """
         d = self.bf.get(i, j, k, l, m)
         p = 1 << pos
         r = d ^ p   # XOR
         t = r & p
-        if t == 0 and d != 0:   # Bit is set to one
-            return True
-        return False
+        return (t == 0 and d != 0) # Look if the bit is set to one
 
     def setCount(self):
+        """
+        Increment the counter of entries and return it
+        """
         self.inputCount += 1
         return self.inputCount
 
     def isFull(self):
-        if self.inputCount != self.tau:
-            return False
-        return True
+        """
+        Return true if the bloom filter is full, false otherwise.
+        """
+        return self.inputCount == self.tau
 
     def setMember(self, word):
         """
-        non-blind insertion
+        Add a word in the bloom filter, meaning set the corresponding bit to 1.
+        This is done in non-blind insertion, which means we look if the word is already in the bloom filter before inserting.
         """
         h = mmh3.hash64(word, seed=42, signed=False)[0]
         i = h % self.X
@@ -64,10 +78,11 @@ class FiveDBF:
             else:
                 if self.print_info:
                     print(f"The word : \"{word}\" is already a member of BF")
-                self.alreadyMemberCount += 1
 
     def testMember(self, word):
-        flag = True
+        """
+        Test if a word is in the bloom filter. (bit set to 1)
+        """
         h = mmh3.hash64(word, seed=42, signed=False)[0]
         i = h % self.X
         j = h % self.Y        
@@ -75,10 +90,12 @@ class FiveDBF:
         l = h % self.W
         m = h % self.V
         pos = h % 63    # Mod 63 (bits), use odd number of bits decrease collision
-        flag = self.test(i, j, k, l, m, pos)
-        return flag
+        return self.test(i, j, k, l, m, pos)
 
     def delete(self, i, j, k, l, m, pos):
+        """
+        Set the bit of position pos in the bit array to 0, at the indices i, j, k, l, m of the filter.
+        """
         d = self.bf.get(i, j, k, l, m)
         p = 1 << pos
         r = d ^ p
@@ -86,6 +103,9 @@ class FiveDBF:
             self.bf.set(i, j, k, l, m, r)
 
     def deleteMember(self, word):
+        """
+        Delete a word in the bloom filter. (bit set to 0)
+        """
         h = mmh3.hash64(word, seed=42, signed=False)[0]
         i = h % self.X
         j = h % self.Y
@@ -98,15 +118,19 @@ class FiveDBF:
         else:
             if self.print_info:
                 print(f"The word : \"{word}\" does not exist")
-            
-    def getAlreadyMemberCount(self):
-        return self.alreadyMemberCount
     
     def __repr__(self):
+        """
+        Return a representation of the bloom filter.
+        """
         return self.bf.__repr__()
 
 class FiveArray:
     def __init__(self, X, Y, Z, W, V):
+        """
+        Create a matrix of size X * Y * Z * W * V, where each value is a bit array of size 64 bits.
+        We can get and set each value by giving correct coordinates.
+        """
         self.bf = np.array([[[[0 for _ in range(W)] for _ in range(Z)] for _ in range(Y)] for _ in range(X)], dtype=array.array)
         for i in range(X):
             for j in range(Y):
@@ -122,6 +146,9 @@ class FiveArray:
         self.bf[X][Y][Z][W][V] = value
     
     def __repr__(self):
+        """
+        Return a representation of the bloom filter.
+        """
         repr = ""
         for i in range(len(self.bf)):
             for j in range(len(self.bf[0])):
@@ -137,12 +164,9 @@ class FiveArray:
         
 
 if __name__ == "__main__":
-    print("Creation")
     bf = FiveDBF(31, 37, 41, 43, 47, 4)
-    print("Launch")
+
     fileName = "DataCleaned.txt"
     with open(fileName, mode="r") as book:
         for word in book.readlines():
             bf.setMember(word[:-1])
-
-    print("Already member count : ", bf.getAlreadyMemberCount())
