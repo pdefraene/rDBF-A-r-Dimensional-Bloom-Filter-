@@ -174,7 +174,7 @@ def compare_different_number_of_insertion_time(fileName = "DataCleaned3.txt"):
     bloom_4 = FourDBF(31, 37, 41, 43, 4, print_info=False)
     bloom_5 = FiveDBF(31, 37, 41, 43, 47, 4, print_info=False)
     bloom_simple = BloomFilter(max_elements=100000, error_rate=0.001)
-    cuckoo_filter = CuckooFilter(capacity=100000, bucket_size=10000, fingerprint_size=1000)
+    cuckoo_filter = CuckooFilter(capacity=1000000, bucket_size=100000, fingerprint_size=10000)
 
     number_of_insertions = [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000, 90000, 95000]
     insertion_times = []
